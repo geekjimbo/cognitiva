@@ -6,10 +6,60 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3-legend/1.1.0/d3-legend.js"></script>
     <link href='http://fonts.googleapis.com/css?family=Poiret+One' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.3.2/js/tether.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Indie+Flower" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Dosis|Arima+Madurai|Josefin+Sans|Noto+Serif|Pacifico" rel="stylesheet">
     <style>
-    
-      .axis text {
-        font-family: 'Poiret One', cursive;
+      .myspan  {
+        font-family: 'Arima Madurai', cursive ;
+        font-size: 16pt;
+      }
+       .figura  {
+        font-family: 'Indie Flower', cursive ;
+        font-size: 12pt;
+        display: inline-block;
+        padding-right: 200px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 28%;
+        float: center;
+        text-align: center;
+        padding: 0;
+      }
+        .h1  {
+        font-family: 'Pacifico', sans-serif ;
+        font-size: 20pt;
+        width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .score  {
+        font-family: 'Indie Flower', bold ;
+        font-size: 26pt;
+      }
+      .tooltiptext  {
+        font-family: 'Indie Flower', cursive ;
+        font-size: 22pt;
+      }
+
+      .topRightLabel  {
+        font-family: 'Indie Flower', bold ;
+        font-size: 30pt;
+      }
+
+      .introtext  {
+        font-family: 'Indie Flower', bold ;
+        font-size: 30pt;
+      }
+
+      text {
+        #font-family: 'Poiret One', cursive;
+        font-family: 'Indie Flower', cursive;
         font-size: 12pt;
       }
       .axis .label {
@@ -29,12 +79,21 @@
     </style>
   </head>
   <body>
+        <figure>
+            <img src="blank.png" alt="Logo" />
+        </figure>
+    <h1 class='h1'><div> análisis de sentimiento con cognitiva</div> </h1>
     <script>
     
+      var popoverOptions = {
+        html : true,
+        template: '<div class="popover" role="tooltip"><div class="popover-arrow"></div><div class="popover-content"></div></div>'
+      };
+      var legendDelay = 5000;
       var dataArray;
-      var outerWidth = 1200;
-      var outerHeight = 700;
-      var margin = { left: 120, top: 50, right: 10, bottom: 80 };
+      var outerWidth = 1000 ;//1200;
+      var outerHeight = 500 ; //700;
+      var margin = { left: 120, top: 50, right: 10, bottom: 100 };
       var rMin = 0; // "r" stands for radius
       var rMax = 20;
       var xColumn = "date";
@@ -50,14 +109,16 @@
 
       var innerWidth  = outerWidth  - margin.left - margin.right;
       var innerHeight = outerHeight - margin.top  - margin.bottom;
-      var introLabel = "Cognitiva's Watson esta calculando el Análisis de Sentimiento..."
-      var toprightLabel = "test text"
+      var introLabel = "Calculando el Análisis de Sentimiento..."
+      var headerLabel = ""
+      var toprightLabel = ""
 
       var svg = d3.select("body").append("svg")
         .attr("width", outerWidth)
         .attr("height", outerHeight);
 
       var introText = svg.append("text").text(introLabel)
+        .attr("class", "introtext")
         .attr("text-anchor", "middle")
         .attr("x", outerWidth / 2)
         .attr("y", outerHeight / 2);
@@ -66,6 +127,7 @@
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       var toprightText = g.append("text").text(toprightLabel)
+        .attr("class", "topRightLabel")
         .attr("text-anchor", "end")
         .attr("x", innerWidth)
         .attr("y", 0);
@@ -76,7 +138,7 @@
       var xAxisLabel = xAxisG.append("text")
         .style("text-anchor", "middle")
         .attr("x", innerWidth / 2)
-        .attr("y", xAxisLabelOffset)
+        .attr("y", xAxisLabelOffset-4)
         .attr("class", "label");
 
       var yAxisG = g.append("g")
@@ -88,15 +150,17 @@
 
       var colorLegendG = g.append("g")
               .attr("class", "color-legend")
-                      .attr("transform", "translate(200,"+ (innerHeight+42)+")");
+                      .attr("transform", "translate(200,"+ (innerHeight+55)+")");
 
       //var xScale = d3.scale.linear().range([0, innerWidth]);
       var xScale = d3.time.scale().range([0, innerWidth]);
       var yScale = d3.scale.linear().range([innerHeight, 0]);
       //var rScale = d3.scale.linear().range([rMin, rMax]);
       var rScale = d3.scale.sqrt().range([rMin, rMax]);
-      var colorScale = d3.scale.category10();
-     // var colorScale = d3.scale.ordinal()
+      //var colorScale = d3.scale.category10();
+      var colorScale = d3.scale.ordinal()
+                      .domain(['masxmenos', 'maxipali', 'pali', 'vindi'])
+                      .range([ "rgb(153, 107, 195)", "rgb(56, 106, 197)", "rgb(93, 199, 76)", "rgb(234, 118, 47)"]);
      //   .range(["#0066FF", "#CC0066", "#33CC33"]);
 
       var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
@@ -111,10 +175,10 @@
       var colorLegend = d3.legend.color()
         .scale(colorScale)
         .orient('horizontal')
-        .shapePadding(35)
+        .shapePadding(120)
         .shapeWidth(25)
-        .shapeHeight(25)
-        .labelOffset(5);
+        .shapeHeight(20)
+        .labelOffset(8);
 
       function renderCircles(data){
         xScale.domain(d3.extent(data, function (d){ return d[xColumn]; }));
@@ -137,6 +201,31 @@
           .attr("r",       function (d){ return       rScale(d[rColumn]);     })
           .attr("fill",    function (d){ return   colorScale(d[colorColumn]); })
           .attr("opacity",    .25)
+
+          .on("mouseover", function (d){
+                      d3.select(this)
+                        .transition().duration(500)
+                        .attr("r", function (d){ return rScale(d[rColumn]) * 2; });
+                    })
+                    .on("mouseout", function (d){
+                      d3.select(this)
+                        .transition().duration(500)
+                        .attr("r", function (d){ return rScale(d[rColumn]); });
+                    })
+
+            .on("mouseenter", function(d){
+              popoverOptions.content = [
+                "Tienda <strong class='tooltiptext'>" + d.storeid+", "+ d.qty_notes + "</strong> comentario(s)",
+                "Puntaje de Sentimiento",
+                "<strong class = 'score'> " + d.score + "</strong>"
+              ].join("<br>")
+              $(this).popover(popoverOptions);
+              $(this).popover("show");
+            }) 
+            .on("mouseleave", function (d){
+              $(this).popover("hide");
+            })
+
           .transition().duration(2000)
           .attr("cy",      function (d){ return       yScale(d[yColumn]);     });
 
@@ -181,13 +270,32 @@
         //renderCircles(dataArray);
         setTimeout(function(){
           renderLegend(dataArray);
-          var filterData = dataArray.filter(function(d2){return d2[colorColumn] === "AM1" })
+          var filterData = dataArray.filter(function(d2){return d2[colorColumn] === "masxmenos" })
           renderCircles(filterData);
-        }, 1000);
+        }, legendDelay);
       }
 
-      d3.csv("cr_stores_sp.csv", type, myRender);
+      //d3.csv("cr_stores_sp.csv", type, myRender);
+      d3.csv("stores.csv", type, myRender);
 
     </script>
+    <br>
+    <div> 
+        <figure>
+            <img src="blank.png" alt="Logo" height="15" />
+        </figure>
+    </div>
+    <br>
   </body>
+   <footer margin-top="8em" width='720' height='24'>
+     <div>
+       <p class='figura'>Powered by</p>
+        <figure class = 'figura' >
+            <img src="lantern.png" alt="Logo" height="20" />
+        </figure>
+        <figure class = 'figura'>
+            <img src="dvinciworks.png" alt="Logo" height="15"/>
+        </figure>
+    </div>
+  </footer>
 </html>
